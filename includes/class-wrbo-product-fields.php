@@ -39,6 +39,9 @@ class WRBO_Product_Fields {
     }
 
     public function save_net_weight_field( int $post_id ): void {
+        if ( ! current_user_can( 'edit_product', $post_id ) ) {
+            return;
+        }
         $value = isset( $_POST['_wrbo_netto_gewicht'] ) ? wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_wrbo_netto_gewicht'] ) ) ) : '';
         update_post_meta( $post_id, '_wrbo_netto_gewicht', $value );
     }
@@ -60,6 +63,9 @@ class WRBO_Product_Fields {
     }
 
     public function save_variation_net_weight_field( int $variation_id, int $loop ): void {
+        if ( ! current_user_can( 'edit_product', $variation_id ) ) {
+            return;
+        }
         if ( isset( $_POST['variable_wrbo_netto_gewicht'][ $loop ] ) ) {
             $value = wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['variable_wrbo_netto_gewicht'][ $loop ] ) ) );
             update_post_meta( $variation_id, '_wrbo_netto_gewicht', $value );

@@ -6,7 +6,8 @@ $date_to          = isset( $_GET['date_to'] )   ? sanitize_text_field( $_GET['da
 $apply_deductions = ! empty( $_GET['apply_deductions'] ) && '1' === $_GET['apply_deductions'];
 $show_report      = isset( $_GET['date_from'] );
 
-$report_data      = null;
+$report_data = null;
+$deductions  = [];
 if ( $show_report ) {
     $report_data = WRBO_Report::generate( $date_from, $date_to, $apply_deductions );
 }
@@ -68,7 +69,7 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
                 <div class="notice notice-info inline">
                     <p><?php printf(
                         esc_html__( 'Er zijn %d openstaande terugbetaling(en) die nog niet zijn afgetrokken. Vink "Terugbetalingen aftrekken" aan om ze op dit rapport toe te passen.', 'wrbo' ),
-                        esc_html( $pending_count )
+                        (int) $pending_count
                     ); ?></p>
                 </div>
             <?php
@@ -131,10 +132,14 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
 
             <?php if ( ! empty( $unmapped ) ) : ?>
                 <div class="notice notice-warning inline">
-                    <p><?php printf(
-                        esc_html__( '%d productcategorie(ën) zonder OPEN-koppeling. Stel de koppeling in via %s.', 'wrbo' ),
-                        count( $unmapped ),
-                        '<a href="' . esc_url( admin_url( 'admin.php?page=wrbo-settings' ) ) . '">' . esc_html__( 'Instellingen', 'wrbo' ) . '</a>'
+                    <p><?php
+                    printf(
+                        wp_kses(
+                            __( '%d productcategorie(ën) zonder OPEN-koppeling. Stel de koppeling in via <a href="%s">Instellingen</a>.', 'wrbo' ),
+                            [ 'a' => [ 'href' => [] ] ]
+                        ),
+                        (int) count( $unmapped ),
+                        esc_url( admin_url( 'admin.php?page=wrbo-settings' ) )
                     ); ?></p>
                 </div>
             <?php endif; ?>

@@ -38,7 +38,9 @@ class WRBO_Report {
             }
 
             foreach ( $order->get_items() as $item ) {
-                /** @var WC_Order_Item_Product $item */
+                if ( ! $item instanceof WC_Order_Item_Product ) {
+                    continue;
+                }
                 $product_id   = $item->get_product_id();
                 $variation_id = $item->get_variation_id();
                 $qty          = (int) $item->get_quantity();

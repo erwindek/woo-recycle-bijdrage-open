@@ -84,8 +84,18 @@ class WRBO_Admin {
 
         $redirect = admin_url( 'admin.php?page=wrbo-import' );
 
-        if ( empty( $_FILES['wrbo_csv']['tmp_name'] ) ) {
+        if ( empty( $_FILES['wrbo_csv']['tmp_name'] ) || UPLOAD_ERR_OK !== (int) $_FILES['wrbo_csv']['error'] ) {
             wp_safe_redirect( add_query_arg( 'wrbo_error', urlencode( __( 'Geen bestand geselecteerd.', 'wrbo' ) ), $redirect ) );
+            exit;
+        }
+
+        if ( ! is_uploaded_file( $_FILES['wrbo_csv']['tmp_name'] ) ) {
+            wp_die( esc_html__( 'Ongeldig bestand.', 'wrbo' ) );
+        }
+
+        $max_bytes = 5 * 1024 * 1024; // 5 MB
+        if ( $_FILES['wrbo_csv']['size'] > $max_bytes ) {
+            wp_safe_redirect( add_query_arg( 'wrbo_error', urlencode( __( 'Bestand is te groot (max 5 MB).', 'wrbo' ) ), $redirect ) );
             exit;
         }
 
@@ -105,9 +115,14 @@ class WRBO_Admin {
         }
         check_admin_referer( 'wrbo_generate_report' );
 
-        $date_from        = isset( $_POST['date_from'] ) ? sanitize_text_field( $_POST['date_from'] ) : '';
-        $date_to          = isset( $_POST['date_to'] ) ? sanitize_text_field( $_POST['date_to'] ) : '';
+        $date_from        = isset( $_POST['date_from'] ) ? sanitize_text_field( wp_unslash( $_POST['date_from'] ) ) : '';
+        $date_to          = isset( $_POST['date_to'] )   ? sanitize_text_field( wp_unslash( $_POST['date_to'] ) )   : '';
         $apply_deductions = ! empty( $_POST['apply_deductions'] );
+
+        $date_pattern = '/^\d{4}-\d{2}-\d{2}$/';
+        if ( ! preg_match( $date_pattern, $date_from ) || ! preg_match( $date_pattern, $date_to ) ) {
+            wp_die( esc_html__( 'Ongeldige datumnotatie. Gebruik JJJJ-MM-DD.', 'wrbo' ) );
+        }
 
         wp_safe_redirect( add_query_arg( [
             'page'             => 'wrbo-report',

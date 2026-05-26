@@ -40,6 +40,10 @@ class WRBO_Import {
         $delimiter = ( substr_count( $first_line, ';' ) >= substr_count( $first_line, ',' ) ) ? ';' : ',';
 
         $header = fgetcsv( $handle, 0, $delimiter );
+        // Strip UTF-8 BOM that Excel adds to CSV exports
+        if ( $header ) {
+            $header[0] = ltrim( $header[0], "\xEF\xBB\xBF" );
+        }
         $header = array_map( 'strtolower', array_map( 'trim', $header ) );
 
         // Map column names

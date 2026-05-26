@@ -1,0 +1,166 @@
+/* =========================================================
+   WRBO – Admin Styles
+   ========================================================= */
+
+.wrbo-wrap h1 {
+    margin-bottom: 16px;
+}
+
+/* Filter bar on report page */
+.wrbo-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: #fff;
+    padding: 16px 20px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-bottom: 24px;
+}
+.wrbo-filter-bar label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+.wrbo-filter-bar input[type="date"] {
+    padding: 4px 8px;
+}
+.wrbo-deduction-toggle {
+    color: #8b4513;
+}
+.wrbo-badge {
+    display: inline-block;
+    background: #d63638;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+/* Tables */
+.wrbo-summary-table,
+.wrbo-detail-table,
+.wrbo-deductions-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.wrbo-summary-table th,
+.wrbo-summary-table td,
+.wrbo-detail-table th,
+.wrbo-detail-table td,
+.wrbo-deductions-table th,
+.wrbo-deductions-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f1;
+    vertical-align: middle;
+}
+.wrbo-summary-table thead th,
+.wrbo-detail-table thead th,
+.wrbo-deductions-table thead th {
+    background: #f6f7f7;
+    font-weight: 600;
+    border-bottom: 2px solid #c3c4c7;
+}
+.wrbo-totals td {
+    background: #f0f6fc;
+    border-top: 2px solid #2271b1;
+}
+.wrbo-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.wrbo-missing-weight {
+    color: #d63638;
+    font-style: italic;
+}
+
+/* Scrollable detail table */
+.wrbo-table-scroll {
+    overflow-x: auto;
+    margin-bottom: 8px;
+}
+
+/* Mapping table */
+.wrbo-mapping-table {
+    margin-top: 12px;
+}
+.wrbo-mapping-table th,
+.wrbo-mapping-table td {
+    padding: 8px 10px;
+    vertical-align: middle;
+}
+.wrbo-mapping-table select {
+    min-width: 260px;
+}
+.wrbo-cat-id {
+    color: #757575;
+    font-size: 11px;
+}
+.wrbo-open-label {
+    color: #444;
+    font-style: italic;
+    max-width: 300px;
+}
+
+/* Cards on import page */
+.wrbo-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    max-width: 900px;
+}
+.wrbo-card h2 {
+    margin-top: 0;
+}
+
+/* Example CSV table */
+.wrbo-example-table {
+    border-collapse: collapse;
+    margin: 12px 0;
+}
+.wrbo-example-table th,
+.wrbo-example-table td {
+    border: 1px solid #c3c4c7;
+    padding: 5px 12px;
+    font-family: monospace;
+    font-size: 13px;
+}
+.wrbo-example-table thead th {
+    background: #f6f7f7;
+}
+
+/* Export bar */
+.wrbo-export-bar {
+    margin: 8px 0 24px;
+}
+
+/* Detail search */
+.wrbo-detail-filter {
+    margin-bottom: 8px;
+}
+.wrbo-detail-filter input {
+    width: 280px;
+    padding: 5px 8px;
+}
+
+/* OK / empty states */
+.wrbo-ok {
+    color: #00a32a;
+    font-weight: 500;
+}
+.wrbo-empty {
+    color: #757575;
+    font-style: italic;
+}
+
+/* Inline notices */
+.notice.inline {
+    margin: 12px 0;
+}

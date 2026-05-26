@@ -136,11 +136,6 @@ class WRBO_Settings {
             if ( ! $term || is_wp_error( $term ) ) {
                 continue;
             }
-            // Skip subcategory if its direct parent is already mapped to the same OPEN code.
-            // The parent's name already represents this subcategory in the summary.
-            if ( $term->parent && isset( $mapping[ $term->parent ] ) && $mapping[ $term->parent ] === $open_code ) {
-                continue;
-            }
             if ( ! isset( $result[ $open_code ] ) ) {
                 $result[ $open_code ] = [];
             }

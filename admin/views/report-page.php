@@ -177,10 +177,10 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
 
             <?php
             $detail = $report_data['detail'];
-            // Sort by category then sku
+            // Sort by category then name
             uasort( $detail, function ( $a, $b ) {
                 $cat_cmp = strcmp( $a['category'], $b['category'] );
-                return $cat_cmp !== 0 ? $cat_cmp : strcmp( $a['sku'], $b['sku'] );
+                return $cat_cmp !== 0 ? $cat_cmp : strcmp( $a['name'], $b['name'] );
             } );
             ?>
 
@@ -194,10 +194,9 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
                     <table class="widefat wrbo-detail-table" id="wrbo-detail-table">
                         <thead>
                             <tr>
-                                <th><?php esc_html_e( 'Type (SKU)', 'wrbo' ); ?></th>
+                                <th><?php esc_html_e( 'Product', 'wrbo' ); ?></th>
                                 <th><?php esc_html_e( 'Product ID Woo', 'wrbo' ); ?></th>
                                 <th><?php esc_html_e( 'EAN', 'wrbo' ); ?></th>
-                                <th><?php esc_html_e( 'Lev. Ref.', 'wrbo' ); ?></th>
                                 <th><?php esc_html_e( 'Categorie', 'wrbo' ); ?></th>
                                 <th><?php esc_html_e( 'OPEN code', 'wrbo' ); ?></th>
                                 <th class="wrbo-num"><?php esc_html_e( 'Netto gewicht (kg)', 'wrbo' ); ?></th>
@@ -210,16 +209,18 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
                                 $edit_link = get_edit_post_link( $row['variation_id'] ?: $row['product_id'] );
                             ?>
                                 <tr>
-                                    <td>
+                                    <td style="white-space:nowrap;">
+                                        <?php if ( $row['thumbnail_url'] ) : ?>
+                                            <img src="<?php echo esc_url( $row['thumbnail_url'] ); ?>" width="40" height="40" style="vertical-align:middle;margin-right:6px;object-fit:cover;border-radius:3px;">
+                                        <?php endif; ?>
                                         <?php if ( $edit_link ) : ?>
-                                            <a href="<?php echo esc_url( $edit_link ); ?>"><?php echo esc_html( $row['sku'] ?: "#{$row['product_id']}" ); ?></a>
+                                            <a href="<?php echo esc_url( $edit_link ); ?>"><?php echo esc_html( $row['name'] ); ?></a>
                                         <?php else : ?>
-                                            <?php echo esc_html( $row['sku'] ?: "#{$row['product_id']}" ); ?>
+                                            <?php echo esc_html( $row['name'] ); ?>
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo esc_html( $row['variation_id'] ?: $row['product_id'] ); ?></td>
                                     <td><?php echo esc_html( $row['ean'] ); ?></td>
-                                    <td><?php echo esc_html( $row['lev_ref'] ); ?></td>
                                     <td><?php echo esc_html( $row['category'] ); ?></td>
                                     <td><?php
                                         $oc = $row['open_code'] ?? '';
@@ -239,7 +240,7 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
                         </tbody>
                         <tfoot>
                             <tr class="wrbo-totals">
-                                <td colspan="7"><strong><?php esc_html_e( 'Totaal', 'wrbo' ); ?></strong></td>
+                                <td colspan="6"><strong><?php esc_html_e( 'Totaal', 'wrbo' ); ?></strong></td>
                                 <td class="wrbo-num"><strong><?php echo esc_html( number_format( array_sum( array_column( $detail, 'qty' ) ), 0, ',', '.' ) ); ?></strong></td>
                                 <td class="wrbo-num"><strong><?php echo esc_html( number_format( array_sum( array_column( $detail, 'total_weight' ) ), 3, ',', '.' ) ); ?> kg</strong></td>
                             </tr>

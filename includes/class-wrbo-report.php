@@ -45,6 +45,9 @@ class WRBO_Report {
                     continue;
                 }
                 $product_id   = $item->get_product_id();
+                if ( $product_id <= 0 ) {
+                    continue; // deleted product
+                }
                 $variation_id = $item->get_variation_id();
                 $qty          = (int) $item->get_quantity();
 
@@ -63,22 +66,18 @@ class WRBO_Report {
                     $ean        = get_post_meta( $lookup_id, '_ean', true )
                                   ?: get_post_meta( $lookup_id, '_global_unique_id', true )
                                   ?: '';
-                    $lev_ref    = get_post_meta( $lookup_id, '_supplier_ref', true )
-                                  ?: get_post_meta( $lookup_id, '_sku_supplier', true )
-                                  ?: '';
 
                     $detail[ $detail_key ] = [
-                        'product_id'   => $product_id,
-                        'variation_id' => $variation_id,
-                        'sku'          => $product ? $product->get_sku() : '',
-                        'name'         => $product ? $product->get_name() : "Product #{$product_id}",
-                        'ean'          => $ean,
-                        'lev_ref'      => $lev_ref,
-                        'category'     => $parent_cat,
-                        'net_weight'   => $net_weight,
-                        'qty'          => 0,
-                        'total_weight' => 0.0,
-                        'open_code'    => $open_code,
+                        'product_id'    => $product_id,
+                        'variation_id'  => $variation_id,
+                        'name'          => $product ? $product->get_name() : "Product #{$product_id}",
+                        'thumbnail_url' => $product ? get_the_post_thumbnail_url( $product_id, [ 40, 40 ] ) : '',
+                        'ean'           => $ean,
+                        'category'      => $parent_cat,
+                        'net_weight'    => $net_weight,
+                        'qty'           => 0,
+                        'total_weight'  => 0.0,
+                        'open_code'     => $open_code,
                     ];
                 }
 

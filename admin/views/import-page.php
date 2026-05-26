@@ -3,8 +3,8 @@ defined( 'ABSPATH' ) || exit;
 
 $updated = isset( $_GET['wrbo_updated'] ) ? absint( $_GET['wrbo_updated'] ) : null;
 $skipped = isset( $_GET['wrbo_skipped'] ) ? absint( $_GET['wrbo_skipped'] ) : null;
-$errors  = isset( $_GET['wrbo_errors'] ) && $_GET['wrbo_errors'] ? explode( '|', urldecode( sanitize_text_field( $_GET['wrbo_errors'] ) ) ) : [];
-$wrbo_error = isset( $_GET['wrbo_error'] ) ? sanitize_text_field( urldecode( $_GET['wrbo_error'] ) ) : '';
+$errors  = isset( $_GET['wrbo_errors'] ) && $_GET['wrbo_errors'] ? explode( '|', urldecode( sanitize_text_field( wp_unslash( $_GET['wrbo_errors'] ) ) ) ) : [];
+$wrbo_error = isset( $_GET['wrbo_error'] ) ? sanitize_text_field( urldecode( wp_unslash( $_GET['wrbo_error'] ) ) ) : '';
 ?>
 <div class="wrap wrbo-wrap">
     <h1><?php esc_html_e( 'Importeer netto-gewichten', 'wrbo' ); ?></h1>
@@ -51,7 +51,7 @@ $wrbo_error = isset( $_GET['wrbo_error'] ) ? sanitize_text_field( urldecode( $_G
                 <tr><td>67890</td><td>8,25</td></tr>
             </tbody>
         </table>
-        <p class="description"><?php esc_html_e( 'Zowel punt (.) als komma (,) zijn toegestaan als decimaalteken. De eerste rij wordt behandeld als koptekst.', 'wrbo' ); ?></p>
+        <p class="description"><?php esc_html_e( 'Zowel punt (.) als komma (,) zijn toegestaan als decimaalteken. De eerste rij wordt behandeld als koptekst. UTF-8 BOM (Excel) wordt automatisch verwijderd.', 'wrbo' ); ?></p>
 
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data">
             <input type="hidden" name="action" value="wrbo_import_csv">
@@ -69,40 +69,32 @@ $wrbo_error = isset( $_GET['wrbo_error'] ) ? sanitize_text_field( urldecode( $_G
     </div>
 
     <div class="wrbo-card">
-        <h2><?php esc_html_e( 'Products zonder netto-gewicht', 'wrbo' ); ?></h2>
-        <p><?php esc_html_e( 'Onderstaande producten (met orders in de afgelopen 12 maanden) hebben nog geen netto-gewicht ingesteld.', 'wrbo' ); ?></p>
+        <h2><?php esc_html_e( 'Gepubliceerde producten zonder netto-gewicht', 'wrbo' ); ?></h2>
+        <p><?php esc_html_e( 'Onderstaande gepubliceerde producten hebben nog geen netto-gewicht ingesteld (max. 100 weergegeven).', 'wrbo' ); ?></p>
         <?php
-        // Show products without net weight that had orders in the last 12 months
-        $months_ago = date( 'Y-m-d', strtotime( '-12 months' ) );
-        $orders_recent = wc_get_orders( [
-            'status'       => array_map( fn($s) => str_replace('wc-', '', $s), WRBO_Settings::get_order_statuses() ),
-            'date_created' => $months_ago . '...' . date( 'Y-m-d' ),
-            'limit'        => -1,
-            'return'       => 'objects',
-            'type'         => 'shop_order',
-        ] );
+        global $wpdb;
 
-        $missing = [];
-        foreach ( $orders_recent as $order ) {
-            foreach ( $order->get_items() as $item ) {
-                $vid = $item->get_variation_id() ?: $item->get_product_id();
-                if ( isset( $missing[ $vid ] ) ) {
-                    continue;
-                }
-                $w = get_post_meta( $vid, '_wrbo_netto_gewicht', true );
-                if ( '' === $w || ! is_numeric( $w ) || (float) $w <= 0 ) {
-                    $p = wc_get_product( $vid );
-                    $missing[ $vid ] = [
-                        'id'  => $vid,
-                        'sku' => $p ? $p->get_sku() : '',
-                        'name' => $p ? $p->get_name() : "Product #{$vid}",
-                    ];
-                }
-            }
-        }
+        // Direct meta query – avoids loading orders, works fast on large stores
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $missing = $wpdb->get_results(
+            "SELECT p.ID, p.post_title, pm_sku.meta_value AS sku
+             FROM {$wpdb->posts} p
+             LEFT JOIN {$wpdb->postmeta} pm
+                 ON p.ID = pm.post_id AND pm.meta_key = '_wrbo_netto_gewicht'
+             LEFT JOIN {$wpdb->postmeta} pm_sku
+                 ON p.ID = pm_sku.post_id AND pm_sku.meta_key = '_sku'
+             WHERE p.post_type IN ('product', 'product_variation')
+               AND p.post_status = 'publish'
+               AND (pm.meta_value IS NULL
+                    OR pm.meta_value = ''
+                    OR CAST(pm.meta_value AS DECIMAL(10,4)) <= 0)
+             ORDER BY p.post_title ASC
+             LIMIT 100",
+            ARRAY_A
+        );
         ?>
         <?php if ( empty( $missing ) ) : ?>
-            <p class="wrbo-ok"><?php esc_html_e( '✓ Alle producten met recente orders hebben een netto-gewicht.', 'wrbo' ); ?></p>
+            <p class="wrbo-ok"><?php esc_html_e( '✓ Alle gepubliceerde producten hebben een netto-gewicht.', 'wrbo' ); ?></p>
         <?php else : ?>
             <table class="widefat">
                 <thead>
@@ -116,10 +108,10 @@ $wrbo_error = isset( $_GET['wrbo_error'] ) ? sanitize_text_field( urldecode( $_G
                 <tbody>
                     <?php foreach ( $missing as $row ) : ?>
                         <tr>
-                            <td><?php echo esc_html( $row['id'] ); ?></td>
-                            <td><?php echo esc_html( $row['sku'] ); ?></td>
-                            <td><?php echo esc_html( $row['name'] ); ?></td>
-                            <td><a href="<?php echo esc_url( get_edit_post_link( $row['id'] ) ); ?>" class="button button-small"><?php esc_html_e( 'Bewerken', 'wrbo' ); ?></a></td>
+                            <td><?php echo esc_html( $row['ID'] ); ?></td>
+                            <td><?php echo esc_html( $row['sku'] ?? '' ); ?></td>
+                            <td><?php echo esc_html( $row['post_title'] ); ?></td>
+                            <td><a href="<?php echo esc_url( get_edit_post_link( (int) $row['ID'] ) ); ?>" class="button button-small"><?php esc_html_e( 'Bewerken', 'wrbo' ); ?></a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

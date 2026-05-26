@@ -76,6 +76,9 @@ $refund_tracking = WRBO_Settings::is_refund_tracking_enabled();
                                         class="wrbo-open-code-select"
                                         data-selected="<?php echo esc_attr( $current_code ); ?>">
                                     <option value=""><?php esc_html_e( '— Niet gekoppeld —', 'wrbo' ); ?></option>
+                                    <option value="geen" <?php selected( $current_code, 'geen' ); ?>>
+                                        <?php esc_html_e( '✗ GEEN OPEN PRODUCT (geen recycle bijdrage)', 'wrbo' ); ?>
+                                    </option>
                                     <?php foreach ( $all_open_cats as $eee_code => $group ) : ?>
                                         <optgroup label="<?php echo esc_attr( $eee_code . ' – ' . $group['label'] ); ?>">
                                             <?php foreach ( $group['codes'] as $code => $cdata ) : ?>

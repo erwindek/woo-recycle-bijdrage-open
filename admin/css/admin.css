@@ -150,6 +150,13 @@
     padding: 5px 8px;
 }
 
+/* Geen bijdrage label in detail table */
+.wrbo-geen {
+    color: #888;
+    font-style: italic;
+    font-size: 11px;
+}
+
 /* OK / empty states */
 .wrbo-ok {
     color: #00a32a;

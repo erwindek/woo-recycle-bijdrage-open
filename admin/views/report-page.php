@@ -221,7 +221,14 @@ $pending_count   = $refund_enabled && ! $apply_deductions ? count( WRBO_Refunds:
                                     <td><?php echo esc_html( $row['ean'] ); ?></td>
                                     <td><?php echo esc_html( $row['lev_ref'] ); ?></td>
                                     <td><?php echo esc_html( $row['category'] ); ?></td>
-                                    <td><?php echo esc_html( $row['open_code'] ?? '—' ); ?></td>
+                                    <td><?php
+                                        $oc = $row['open_code'] ?? '';
+                                        if ( 'geen' === $oc ) {
+                                            echo '<span class="wrbo-geen">' . esc_html__( 'Geen bijdrage', 'wrbo' ) . '</span>';
+                                        } else {
+                                            echo esc_html( $oc ?: '—' );
+                                        }
+                                    ?></td>
                                     <td class="wrbo-num <?php echo $row['net_weight'] <= 0 ? 'wrbo-missing-weight' : ''; ?>">
                                         <?php echo esc_html( $row['net_weight'] > 0 ? number_format( $row['net_weight'], 3, ',', '.' ) : '—' ); ?>
                                     </td>

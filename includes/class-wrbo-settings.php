@@ -48,7 +48,8 @@ class WRBO_Settings {
         foreach ( $value as $wc_cat_id => $open_code ) {
             $wc_cat_id = absint( $wc_cat_id );
             $open_code = sanitize_text_field( $open_code );
-            if ( $wc_cat_id > 0 && ( '' === $open_code || isset( $flat[ $open_code ] ) ) ) {
+            // '' = niet gekoppeld, 'geen' = expliciet geen bijdrage, or a valid OPEN code
+            if ( $wc_cat_id > 0 && ( '' === $open_code || 'geen' === $open_code || isset( $flat[ $open_code ] ) ) ) {
                 $clean[ $wc_cat_id ] = $open_code;
             }
         }
@@ -86,6 +87,7 @@ class WRBO_Settings {
     /**
      * Get the OPEN code mapped to a WooCommerce category ID.
      * Walks up the category hierarchy until a mapping is found.
+     * Returns 'geen' for explicit no-contribution, null for unmapped.
      */
     public static function get_open_code_for_product( int $product_id ): ?string {
         $mapping = self::get_category_mapping();
@@ -98,7 +100,7 @@ class WRBO_Settings {
             return null;
         }
 
-        // Direct match first
+        // Direct match first (includes 'geen')
         foreach ( $terms as $term_id ) {
             if ( isset( $mapping[ $term_id ] ) && '' !== $mapping[ $term_id ] ) {
                 return $mapping[ $term_id ];
@@ -116,5 +118,31 @@ class WRBO_Settings {
         }
 
         return null;
+    }
+
+    /**
+     * Pre-compute, from the settings mapping, which WC category names belong to each OPEN code.
+     * Only directly-mapped categories are included (not inherited ones).
+     * Returns [ open_code => [ 'cat name', ... ] ]
+     */
+    public static function get_categories_by_open_code(): array {
+        $mapping = self::get_category_mapping();
+        $result  = [];
+        foreach ( $mapping as $wc_cat_id => $open_code ) {
+            if ( empty( $open_code ) || 'geen' === $open_code ) {
+                continue;
+            }
+            $term = get_term( (int) $wc_cat_id, 'product_cat' );
+            if ( ! $term || is_wp_error( $term ) ) {
+                continue;
+            }
+            if ( ! isset( $result[ $open_code ] ) ) {
+                $result[ $open_code ] = [];
+            }
+            if ( ! in_array( $term->name, $result[ $open_code ], true ) ) {
+                $result[ $open_code ][] = $term->name;
+            }
+        }
+        return $result;
     }
 }

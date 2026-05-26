@@ -19,6 +19,15 @@ class WRBO_Admin {
         add_action( 'admin_post_wrbo_generate_report', [ $this, 'handle_report' ] );
     }
 
+    private function get_menu_icon(): string {
+        // Recycling arrows SVG (Material Icons "autorenew" style), works as WordPress admin menu icon
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'
+             . '<path fill="#a0a5aa" d="M10 2.1V0L7 3l3 3V4.2c2.6 0 4.8 2.1 4.8 4.8 0 .8-.2 1.5-.6 2.2l1.1 1.1C16.7 11.2 17 10.1 17 9c0-3.9-3.1-6.9-7-6.9z"/>'
+             . '<path fill="#a0a5aa" d="M10 13.8c-2.6 0-4.8-2.1-4.8-4.8 0-.8.2-1.5.6-2.2L4.7 5.7C4 6.8 3.5 7.9 3.5 9c0 3.9 3.1 6.9 7 6.9V18l3-3-3-3v1.8z"/>'
+             . '</svg>';
+        return 'data:image/svg+xml;base64,' . base64_encode( $svg );
+    }
+
     public function register_menu(): void {
         add_menu_page(
             __( 'Recycle Bijdrage OPEN', 'wrbo' ),
@@ -26,7 +35,7 @@ class WRBO_Admin {
             'manage_woocommerce',
             'wrbo-report',
             [ $this, 'render_report_page' ],
-            'dashicons-recycle',
+            $this->get_menu_icon(),
             58
         );
         add_submenu_page(

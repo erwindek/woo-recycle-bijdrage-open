@@ -20,6 +20,9 @@ class WRBO_Report {
         // Convert to statuses without wc- prefix for query
         $statuses = array_map( fn( $s ) => str_replace( 'wc-', '', $s ), $allowed_statuses );
 
+        // Pre-compute summary category labels from the settings mapping (not from product data)
+        $code_to_cats = WRBO_Settings::get_categories_by_open_code();
+
         $orders = wc_get_orders( [
             'status'       => $statuses,
             'date_created' => $date_from . '...' . $date_to . ' 23:59:59',
@@ -84,11 +87,14 @@ class WRBO_Report {
             }
         }
 
-        // Build summary per OPEN code
+        // Build summary per OPEN code (skip 'geen' — explicit no-contribution products)
         foreach ( $detail as $row ) {
             $code = $row['open_code'];
             if ( ! $code ) {
                 $code = '__unmapped__';
+            }
+            if ( 'geen' === $code ) {
+                continue; // explicitly excluded from reporting
             }
             if ( ! isset( $summary[ $code ] ) ) {
                 $code_data = $code !== '__unmapped__' ? WRBO_Open_Categories::get_code( $code ) : null;
@@ -96,16 +102,14 @@ class WRBO_Report {
                     'open_code'      => $code,
                     'open_label'     => $code_data ? $code_data['label'] : '— Niet gekoppeld —',
                     'eee_code'       => $code_data ? $code_data['eee_code'] : '',
-                    'wc_categories'  => [],
+                    // Use the categories from settings mapping, not product-level categories
+                    'wc_categories'  => $code_to_cats[ $code ] ?? [],
                     'qty'            => 0,
                     'weight_kg'      => 0.0,
                 ];
             }
             $summary[ $code ]['qty']       += $row['qty'];
             $summary[ $code ]['weight_kg'] += $row['total_weight'];
-            if ( $row['category'] && ! in_array( $row['category'], $summary[ $code ]['wc_categories'], true ) ) {
-                $summary[ $code ]['wc_categories'][] = $row['category'];
-            }
         }
 
         // Handle pending refund deductions
